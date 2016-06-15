@@ -15,7 +15,10 @@ func ValidateRequest(pass http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			pass(w, r)
-		} 
+		} else {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
 	}
 }
 
@@ -26,7 +29,7 @@ func TokenAuth(pass http.HandlerFunc) http.HandlerFunc {
 
 		// Check to see if the Authorization Header has two parts.  A "Bearer" followed by something
 		if len(auth) != 2 || auth[0] != "Bearer" {
-			http.Error(w, "Bad syntax", http.StatusBadRequest)
+			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
 
@@ -56,6 +59,9 @@ func ValidateToken(tkn []byte) bool {
 		return GetSigningKey(), nil
 	})
 
+	if err != nil {
+		fmt.Println("ValidateToken::Error on parsing::%s", err)
+	}
 	if err == nil && token.Valid {
 		return true
 	} else {
