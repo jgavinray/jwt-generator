@@ -10,7 +10,7 @@ func main() {
 	http.HandleFunc("/token", ValidateRequest(generateToken))
 	http.HandleFunc("/validateToken", TokenAuth(resource))
 	fmt.Println("Token Generator listening on Port 8000\n")
-	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:8000", nil))
 }
 
 func resource(w http.ResponseWriter, r *http.Request) {
