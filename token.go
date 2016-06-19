@@ -1,9 +1,8 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
-	"github.com/jgavinray/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"os"
 	"strings"
@@ -33,21 +32,20 @@ func TokenAuth(pass http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Get the second element of the auth array, and attempt to base64 decode it
-		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+		payload := auth[1]
 
 		// Attempt to Validate what was sent in the second array element of the Authorization header
 		if !ValidateToken(payload) {
 			http.Error(w, "Authorization failed", http.StatusUnauthorized)
 			return
 		}
-		
+
 	}
 }
 
-func ValidateToken(tkn []byte) bool {
+func ValidateToken(tkn string) bool {
 
-	tokenToBeValidated := string(tkn)
+	tokenToBeValidated := tkn
 	token, err := jwt.Parse(tokenToBeValidated, func(token *jwt.Token) (interface{}, error) {
 
 		// Check What Algorithm Signed the Token
@@ -60,7 +58,7 @@ func ValidateToken(tkn []byte) bool {
 	})
 
 	if err != nil {
-		fmt.Println("ValidateToken::Error on parsing::%s", err)
+		fmt.Println("ValidateToken::Error on parsing::", err)
 	}
 	if err == nil && token.Valid {
 		return true
@@ -84,7 +82,7 @@ func generateToken(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	payload := r.Form["payload"]
-	
+
 	if payload == nil {
 		http.Error(w, "Bad syntax", http.StatusBadRequest)
 		return
@@ -92,7 +90,7 @@ func generateToken(w http.ResponseWriter, r *http.Request) {
 
 	mySigningKey := GetSigningKey()
 
-	token := jwt.New(jwt.SigningMethodHS512)
+	token := jwt.New(jwt.SigningMethodHS256)
 	// Set some claims
 	token.Claims["payload"] = payload
 	token.Claims["nbf"] = time.Now()
